@@ -1,7 +1,7 @@
 import logging
-import threading
 import time
 import tinybot
+import multiprocessing
 
 log = logging.getLogger(__name__)
 
@@ -41,52 +41,55 @@ def main():
             bot.account = None
             bot.password = None
 
-    threading.Thread(target=bot.connect).start()
+    t = multiprocessing.Process(target=bot.connect).start()
 
-    while not bot.is_connected:
-        time.sleep(2)
+    try:
+        while not bot.is_connected:
+            time.sleep(2)
 
-    while bot.is_connected:
-        chat_msg = raw_input()
-        if chat_msg.startswith('/'):
-            msg_parts = chat_msg.split(' ')
-            cmd = msg_parts[0].lower().strip()
-            if cmd == '/q':
-                bot.disconnect()
-            elif cmd == '/a':
-                if len(bot.users.signed_in) == 0:
-                    print ('No signed in users in the room.')
-                else:
-                    for user in bot.users.signed_in:
-                        print ('%s:%s' % (user.nick, user.account))
-            elif cmd == '/u':
-                for user in bot.users.all:
-                    print ('%s: %s' % (bot.users.all[user].nick, bot.users.all[user].user_level))
-            elif cmd == '/m':
-                if len(bot.users.mods) == 0:
-                    print ('No moderators in the room.')
-                else:
-                    for mod in bot.users.mods:
-                        print (mod.nick)
-            elif cmd == '/n':
-                if len(bot.users.norms) == 0:
-                    print ('No normal users in the room.')
-                else:
-                    for norm in bot.users.norms:
-                        print (norm.nick)
-            elif cmd == '/l':
-                if len(bot.users.lurkers) == 0:
-                    print ('No lurkers in the room.')
-                else:
-                    for lurker in bot.users.lurkers:
-                        print (lurker.nick)
+        while bot.is_connected:
+            chat_msg = raw_input()
+            if chat_msg.startswith('/'):
+                msg_parts = chat_msg.split(' ')
+                cmd = msg_parts[0].lower().strip()
+                if cmd == '/q':
+                    bot.disconnect()
+                elif cmd == '/a':
+                    if len(bot.users.signed_in) == 0:
+                        print ('No signed in users in the room.')
+                    else:
+                        for user in bot.users.signed_in:
+                            print ('%s:%s' % (user.nick, user.account))
+                elif cmd == '/u':
+                    for user in bot.users.all:
+                        print ('%s: %s' % (bot.users.all[user].nick, bot.users.all[user].user_level))
+                elif cmd == '/m':
+                    if len(bot.users.mods) == 0:
+                        print ('No moderators in the room.')
+                    else:
+                        for mod in bot.users.mods:
+                            print (mod.nick)
+                elif cmd == '/n':
+                    if len(bot.users.norms) == 0:
+                        print ('No normal users in the room.')
+                    else:
+                        for norm in bot.users.norms:
+                            print (norm.nick)
+                elif cmd == '/l':
+                    if len(bot.users.lurkers) == 0:
+                        print ('No lurkers in the room.')
+                    else:
+                        for lurker in bot.users.lurkers:
+                            print (lurker.nick)
 
-            # FOR DEBUGGING METHODS!
-            elif cmd == '/t':
-                pass
+                # FOR DEBUGGING METHODS!
+                elif cmd == '/t':
+                    pass
 
-        else:
-            bot.send_chat_msg(chat_msg)
+            else:
+                bot.send_chat_msg(chat_msg)
+    except KeyboardInterrupt:
+        p.terminate()
 
 if __name__ == '__main__':
     if tinybot.pinylib.CONFIG.DEBUG_TO_FILE:
